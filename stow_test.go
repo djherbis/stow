@@ -10,7 +10,37 @@ import (
 	"github.com/djherbis/buffer"
 )
 
-func TestStore(t *testing.T) {
+func TestBufferPoolStore(t *testing.T) {
+	db, err := bolt.Open("my.db", 0600, nil)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	defer os.Remove("my.db")
+	defer db.Close()
+
+	store := NewBufferPoolStore(db, []byte("pools"))
+
+	key := []byte("hello")
+
+	pool := buffer.NewFilePool(10, ".")
+	b := pool.Get()
+	b.Write([]byte("hello world"))
+
+	store.Put(key, pool)
+
+	p, err := store.Get(key)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	p.Put(b)
+
+	if b.Len() > 0 {
+		t.Errorf("buffer should be empty")
+	}
+}
+
+func TestBufferStore(t *testing.T) {
 	db, err := bolt.Open("my.db", 0600, nil)
 	if err != nil {
 		t.Error(err.Error())
@@ -38,5 +68,5 @@ func TestStore(t *testing.T) {
 		t.Errorf("expected %s, got %s", input, data)
 	}
 
-	store.Wipe()
+	store.DeleteAll()
 }
