@@ -20,6 +20,12 @@ type Decoder interface {
 	Decode(interface{}) error
 }
 
+var (
+	_ Codec = XmlCodec{}
+	_ Codec = JsonCodec{}
+	_ Codec = GobCodec{}
+)
+
 type XmlCodec struct{}
 
 func (c XmlCodec) NewEncoder(w io.Writer) Encoder {
