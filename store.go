@@ -3,7 +3,6 @@ package stow
 
 import (
 	"bytes"
-	"encoding/gob"
 	"errors"
 
 	"github.com/boltdb/bolt"
@@ -16,18 +15,31 @@ var ErrNotFound = errors.New("not found")
 type Store struct {
 	db     *bolt.DB
 	bucket []byte
+	codec  Codec
 }
 
 // NewStore creates a new Store, using the underlying
 // bolt.DB "bucket" to persist objects.
 func NewStore(db *bolt.DB, bucket []byte) *Store {
-	return &Store{db: db, bucket: bucket}
+	return NewCustomStore(db, bucket, GobCodec{})
+}
+
+// NewJsonStore creates a new Store, using the underlying
+// bolt.DB "bucket" to persist objects as json.
+func NewJsonStore(db *bolt.DB, bucket []byte) *Store {
+	return NewCustomStore(db, bucket, JsonCodec{})
+}
+
+// NewCustomStore allows you to create a store with
+// a custom underlying Encoding
+func NewCustomStore(db *bolt.DB, bucket []byte, codec Codec) *Store {
+	return &Store{db: db, bucket: bucket, codec: codec}
 }
 
 // Put will store b with key "key"
 func (s *Store) Put(key []byte, b interface{}) error {
 	buf := bytes.NewBuffer(nil)
-	enc := gob.NewEncoder(buf)
+	enc := s.codec.NewEncoder(buf)
 	if err := enc.Encode(&b); err != nil {
 		return err
 	}
@@ -64,7 +76,7 @@ func (s *Store) Pull(key []byte, b interface{}) error {
 	}
 
 	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
+	dec := s.codec.NewDecoder(buf)
 	err = dec.Decode(b)
 
 	return err
@@ -90,7 +102,7 @@ func (s *Store) Get(key []byte, b interface{}) error {
 	}
 
 	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
+	dec := s.codec.NewDecoder(buf)
 	err = dec.Decode(b)
 
 	return err
@@ -106,7 +118,7 @@ func (s *Store) ForEach(do func(i interface{})) error {
 
 		objects.ForEach(func(k, v []byte) error {
 			buf := bytes.NewBuffer(v)
-			dec := gob.NewDecoder(buf)
+			dec := s.codec.NewDecoder(buf)
 			var i interface{}
 			if err := dec.Decode(&i); err == nil {
 				do(i)
