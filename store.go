@@ -30,6 +30,12 @@ func NewJsonStore(db *bolt.DB, bucket []byte) *Store {
 	return NewCustomStore(db, bucket, JsonCodec{})
 }
 
+// NewXmlStore creates a new Store, using the underlying
+// bolt.DB "bucket" to persist objects as xml.
+func NewXmlStore(db *bolt.DB, bucket []byte) *Store {
+	return NewCustomStore(db, bucket, XmlCodec{})
+}
+
 // NewCustomStore allows you to create a store with
 // a custom underlying Encoding
 func NewCustomStore(db *bolt.DB, bucket []byte, codec Codec) *Store {

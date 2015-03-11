@@ -3,6 +3,7 @@ package stow
 import (
 	"encoding/gob"
 	"encoding/json"
+	"encoding/xml"
 	"io"
 )
 
@@ -17,6 +18,16 @@ type Encoder interface {
 
 type Decoder interface {
 	Decode(interface{}) error
+}
+
+type XmlCodec struct{}
+
+func (c XmlCodec) NewEncoder(w io.Writer) Encoder {
+	return xml.NewEncoder(w)
+}
+
+func (c XmlCodec) NewDecoder(r io.Reader) Decoder {
+	return xml.NewDecoder(r)
 }
 
 type JsonCodec struct{}
