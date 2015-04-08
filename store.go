@@ -4,6 +4,8 @@ package stow
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/boltdb/bolt"
 )
@@ -114,24 +116,48 @@ func (s *Store) Get(key []byte, b interface{}) error {
 	return err
 }
 
-// ForEach will run do on each object in the store
-func (s *Store) ForEach(do func(i interface{})) error {
+// ForEach will run do on each object in the store.
+// do must be a function which takes exactly one parameter, which is
+// decodeable.
+func (s *Store) ForEach(do interface{}) error {
+	fv := reflect.ValueOf(do)
+	if fv.Kind() != reflect.Func {
+		return fmt.Errorf("do is not a func()")
+	}
+	ft := fv.Type()
+	if ft.NumIn() != 1 {
+		return fmt.Errorf("do must take exactly one param")
+	}
+	argtype := ft.In(0)
+	if argtype.Kind() == reflect.Ptr {
+		argtype = argtype.Elem()
+	}
+
 	return s.db.Update(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)
 		if objects == nil {
 			return nil
 		}
 
-		objects.ForEach(func(k, v []byte) error {
+		err := objects.ForEach(func(k, v []byte) error {
 			buf := bytes.NewBuffer(v)
 			dec := s.codec.NewDecoder(buf)
-			var i interface{}
-			if err := dec.Decode(&i); err == nil {
-				do(i)
+			i := reflect.New(argtype)
+			err := dec.Decode(i.Interface())
+			if err == nil {
+				if argtype.Kind() != reflect.Ptr {
+					if i.IsValid() {
+						i = i.Elem()
+					} else {
+						i = reflect.Zero(argtype)
+					}
+				}
+				fv.Call([]reflect.Value{i})
 			}
-			return nil
+			return err
 		})
-		return nil
+
+		return err
 	})
 }
 
