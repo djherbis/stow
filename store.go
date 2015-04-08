@@ -31,13 +31,13 @@ func NewStore(db *bolt.DB, bucket []byte) *Store {
 // NewJSONStore creates a new Store, using the underlying
 // bolt.DB "bucket" to persist objects as json.
 func NewJSONStore(db *bolt.DB, bucket []byte) *Store {
-	return NewCustomStore(db, bucket, JsonCodec{})
+	return NewCustomStore(db, bucket, JSONCodec{})
 }
 
 // NewXMLStore creates a new Store, using the underlying
 // bolt.DB "bucket" to persist objects as xml.
 func NewXMLStore(db *bolt.DB, bucket []byte) *Store {
-	return NewCustomStore(db, bucket, XmlCodec{})
+	return NewCustomStore(db, bucket, XMLCodec{})
 }
 
 // NewCustomStore allows you to create a store with
