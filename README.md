@@ -40,7 +40,7 @@ func TestJson(t *testing.T) {
 
   // Create a Json-encoded Store, Xml and Gob are also built-in
   // We'll we store the name in a boltdb bucket named "names"
-  store := NewJsonStore(db, []byte("names"))
+  store := NewJSONStore(db, []byte("names"))
 
   // Store the object
   store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
