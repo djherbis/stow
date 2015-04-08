@@ -22,7 +22,7 @@ type Store struct {
 
 // NewStore creates a new Store, using the underlying
 // bolt.DB "bucket" to persist objects.
-// NewStore uses GobEncoding, you're objects must be registered
+// NewStore uses GobEncoding, your objects must be registered
 // via gob.Register() for this encoding to work.
 func NewStore(db *bolt.DB, bucket []byte) *Store {
 	return NewCustomStore(db, bucket, GobCodec{})
