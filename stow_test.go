@@ -23,11 +23,17 @@ func TestJson(t *testing.T) {
 	store := NewJsonStore(db, []byte("json"))
 	store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
 
+	var found bool
 	err = store.ForEach(func(name MyType) {
+		found = true
 		if name.FirstName != "Derek" || name.LastName != "Kered" {
 			t.Errorf("mismatching name %s", name)
 		}
 	})
+
+	if !found {
+		t.Errorf("ForEach failed!")
+	}
 
 	if err != nil {
 		t.Error(err.Error())

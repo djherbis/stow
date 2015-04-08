@@ -129,7 +129,8 @@ func (s *Store) ForEach(do interface{}) error {
 		return fmt.Errorf("do must take exactly one param")
 	}
 	argtype := ft.In(0)
-	if argtype.Kind() == reflect.Ptr {
+	isPtr := argtype.Kind() == reflect.Ptr
+	if isPtr {
 		argtype = argtype.Elem()
 	}
 
@@ -145,11 +146,11 @@ func (s *Store) ForEach(do interface{}) error {
 			i := reflect.New(argtype)
 			err := dec.Decode(i.Interface())
 			if err == nil {
-				if argtype.Kind() != reflect.Ptr {
+				if !isPtr {
 					if i.IsValid() {
 						i = i.Elem()
 					} else {
-						i = reflect.Zero(argtype)
+						i = reflect.Zero(ft.In(0))
 					}
 				}
 				fv.Call([]reflect.Value{i})
