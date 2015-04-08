@@ -21,28 +21,28 @@ type Decoder interface {
 }
 
 var (
-	_ Codec = XmlCodec{}
-	_ Codec = JsonCodec{}
+	_ Codec = XMLCodec{}
+	_ Codec = JSONCodec{}
 	_ Codec = GobCodec{}
 )
 
-type XmlCodec struct{}
+type XMLCodec struct{}
 
-func (c XmlCodec) NewEncoder(w io.Writer) Encoder {
+func (c XMLCodec) NewEncoder(w io.Writer) Encoder {
 	return xml.NewEncoder(w)
 }
 
-func (c XmlCodec) NewDecoder(r io.Reader) Decoder {
+func (c XMLCodec) NewDecoder(r io.Reader) Decoder {
 	return xml.NewDecoder(r)
 }
 
-type JsonCodec struct{}
+type JSONCodec struct{}
 
-func (c JsonCodec) NewEncoder(w io.Writer) Encoder {
+func (c JSONCodec) NewEncoder(w io.Writer) Encoder {
 	return json.NewEncoder(w)
 }
 
-func (c JsonCodec) NewDecoder(r io.Reader) Decoder {
+func (c JSONCodec) NewDecoder(r io.Reader) Decoder {
 	return json.NewDecoder(r)
 }
 

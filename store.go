@@ -1,4 +1,4 @@
-// stow is used to persist objects to a bolt.DB database.
+// Package stow is used to persist objects to a bolt.DB database.
 package stow
 
 import (
@@ -28,15 +28,15 @@ func NewStore(db *bolt.DB, bucket []byte) *Store {
 	return NewCustomStore(db, bucket, GobCodec{})
 }
 
-// NewJsonStore creates a new Store, using the underlying
+// NewJSONStore creates a new Store, using the underlying
 // bolt.DB "bucket" to persist objects as json.
-func NewJsonStore(db *bolt.DB, bucket []byte) *Store {
+func NewJSONStore(db *bolt.DB, bucket []byte) *Store {
 	return NewCustomStore(db, bucket, JsonCodec{})
 }
 
-// NewXmlStore creates a new Store, using the underlying
+// NewXMLStore creates a new Store, using the underlying
 // bolt.DB "bucket" to persist objects as xml.
-func NewXmlStore(db *bolt.DB, bucket []byte) *Store {
+func NewXMLStore(db *bolt.DB, bucket []byte) *Store {
 	return NewCustomStore(db, bucket, XmlCodec{})
 }
 

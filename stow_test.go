@@ -20,7 +20,7 @@ func TestJson(t *testing.T) {
 		LastName  string `json:"last"`
 	}
 
-	store := NewJsonStore(db, []byte("json"))
+	store := NewJSONStore(db, []byte("json"))
 	store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
 
 	var found bool
