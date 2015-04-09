@@ -42,7 +42,7 @@ func TestChangeType(t *testing.T) {
 	s.Get([]byte("test"), &v)
 
 	if v.String() != "DJ " {
-		t.Errorf("unexpected response name", v.String())
+		t.Errorf("unexpected response name %s", v.String())
 	}
 }
 
