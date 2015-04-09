@@ -58,12 +58,12 @@ func (c JSONCodec) NewDecoder(r io.Reader) Decoder {
 // GobCodec is used to encode/decode using the Gob format.
 type GobCodec struct{}
 
-// Gob Shortcuts
-
+// Register registers the type using gob.Register for use with NewStore() and the GobCodec.
 func Register(value interface{}) {
 	gob.Register(value)
 }
 
+// RegisterName registers the type using gob.RegisterName for use with NewStore() and the GobCodec.
 func RegisterName(name string, value interface{}) {
 	gob.RegisterName(name, value)
 }
