@@ -55,6 +55,15 @@ func testStore(t *testing.T, store *Store) {
 	if err != ErrNotFound {
 		t.Errorf("pull failed to remove the name!")
 	}
+
+	store.Put([]byte("hello"), &MyType{"Friend", "person"})
+	store.DeleteAll()
+
+	var name4 MyType
+	err = store.Pull([]byte("hello"), &name4)
+	if err != ErrNotFound {
+		t.Errorf("DeleteAll failed!")
+	}
 }
 
 func TestJSON(t *testing.T) {
