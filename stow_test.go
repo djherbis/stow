@@ -19,6 +19,28 @@ func (t *MyType) String() string {
 
 func init() {
 	Register(&MyType{})
+	RegisterName("stow.YourType", &YourType{})
+}
+
+type YourType struct {
+	FirstName string `json:"first"`
+}
+
+func TestChangeType(t *testing.T) {
+	db, err := bolt.Open("my4.db", 0600, nil)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	defer os.Remove("my4.db")
+	defer db.Close()
+
+	s := NewStore(db, []byte("interface"))
+
+	s.Put([]byte("test"), &YourType{"DJ"})
+
+	var v MyType
+	s.Get([]byte("test"), &v)
+	fmt.Println(v.String())
 }
 
 func TestInterfaces(t *testing.T) {
