@@ -59,8 +59,14 @@ func (c JSONCodec) NewDecoder(r io.Reader) Decoder {
 type GobCodec struct{}
 
 // Gob Shortcuts
-var Register = gob.Register
-var RegisterName = gob.RegisterName
+
+func Register(value interface{}) {
+	gob.Register(value)
+}
+
+func RegisterName(name string, value interface{}) {
+	gob.RegisterName(name, value)
+}
 
 // NewEncoder returns a new gob encoder which writes to w
 func (c GobCodec) NewEncoder(w io.Writer) Encoder {
