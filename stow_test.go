@@ -37,10 +37,23 @@ func testStore(t *testing.T, store *Store) {
 	}
 
 	var name MyType
-	store.Pull([]byte("hello"), &name)
+	store.Get([]byte("hello"), &name)
 
 	if name.FirstName != "Derek" || name.LastName != "Kered" {
 		t.Errorf("Unexpected name: %v", name)
+	}
+
+	var name2 MyType
+	store.Pull([]byte("hello"), &name2)
+
+	if name2.FirstName != "Derek" || name2.LastName != "Kered" {
+		t.Errorf("Unexpected name2: %v", name2)
+	}
+
+	var name3 MyType
+	err = store.Pull([]byte("hello"), &name3)
+	if err != ErrNotFound {
+		t.Errorf("pull failed to remove the name!")
 	}
 }
 
