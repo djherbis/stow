@@ -50,7 +50,7 @@ func NewCustomStore(db *bolt.DB, bucket []byte, codec Codec) *Store {
 func (s *Store) Put(key []byte, b interface{}) error {
 	buf := bytes.NewBuffer(nil)
 	enc := s.codec.NewEncoder(buf)
-	if err := enc.Encode(&b); err != nil {
+	if err := enc.Encode(b); err != nil {
 		return err
 	}
 
