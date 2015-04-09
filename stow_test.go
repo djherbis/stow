@@ -40,7 +40,10 @@ func TestChangeType(t *testing.T) {
 
 	var v MyType
 	s.Get([]byte("test"), &v)
-	fmt.Println(v.String())
+
+	if v.String() != "DJ " {
+		t.Errorf("unexpected response name", v.String())
+	}
 }
 
 func TestInterfaces(t *testing.T) {
