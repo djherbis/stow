@@ -2,6 +2,7 @@ package stow
 
 import (
 	"encoding/gob"
+	"fmt"
 	"os"
 	"testing"
 
@@ -13,8 +14,45 @@ type MyType struct {
 	LastName  string `json:"last"`
 }
 
+func (t *MyType) String() string {
+	return fmt.Sprintf("%s %s", t.FirstName, t.LastName)
+}
+
 func init() {
-	gob.Register(MyType{})
+	gob.Register(&MyType{})
+}
+
+func TestInterfaces(t *testing.T) {
+	db, err := bolt.Open("my4.db", 0600, nil)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	defer os.Remove("my4.db")
+	defer db.Close()
+
+	s := NewStore(db, []byte("interface"))
+
+	var j fmt.Stringer = &MyType{"First", "Last"}
+	s.Put([]byte("test"), &j)
+
+	err = s.ForEach(func(str fmt.Stringer) {
+		if str.String() != "First Last" {
+			t.Errorf("unexpected string %s", str)
+		}
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	var i fmt.Stringer
+	err = s.Get([]byte("test"), &i)
+	if err != nil {
+		t.Error(err.Error())
+	} else {
+		if i.String() != "First Last" {
+			t.Errorf("unexpected string %s", i)
+		}
+	}
 }
 
 func testStore(t *testing.T, store *Store) {
