@@ -58,6 +58,10 @@ func (c JSONCodec) NewDecoder(r io.Reader) Decoder {
 // GobCodec is used to encode/decode using the Gob format.
 type GobCodec struct{}
 
+// Gob Shortcuts
+var Register = gob.Register
+var RegisterName = gob.RegisterName
+
 // NewEncoder returns a new gob encoder which writes to w
 func (c GobCodec) NewEncoder(w io.Writer) Encoder {
 	return gob.NewEncoder(w)

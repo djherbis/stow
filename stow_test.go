@@ -1,7 +1,6 @@
 package stow
 
 import (
-	"encoding/gob"
 	"fmt"
 	"os"
 	"testing"
@@ -19,7 +18,7 @@ func (t *MyType) String() string {
 }
 
 func init() {
-	gob.Register(&MyType{})
+	Register(&MyType{})
 }
 
 func TestInterfaces(t *testing.T) {
