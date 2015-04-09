@@ -45,6 +45,11 @@ func TestJson(t *testing.T) {
   // Store the object
   store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
 
+  // For each element in the store
+  store.ForEach(func(name Name){
+    fmt.Println(name)
+  })
+
   // Get the object
   var name MyType
   store.Pull([]byte("hello"), &name)
