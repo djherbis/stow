@@ -66,17 +66,19 @@ func (s *Store) Put(key []byte, b interface{}) error {
 
 // Pull will retreive b with key "key", and removes it from the store.
 func (s *Store) Pull(key []byte, b interface{}) error {
-	var data []byte
+	buf := bytes.NewBuffer(nil)
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)
 		if objects == nil {
 			return ErrNotFound
 		}
-		data = objects.Get(key)
+
+		data := objects.Get(key)
 		if data == nil {
 			return ErrNotFound
 		}
 
+		buf.Write(data)
 		objects.Delete(key)
 		return nil
 	})
@@ -85,7 +87,6 @@ func (s *Store) Pull(key []byte, b interface{}) error {
 		return err
 	}
 
-	buf := bytes.NewBuffer(data)
 	dec := s.codec.NewDecoder(buf)
 	err = dec.Decode(b)
 
@@ -94,16 +95,17 @@ func (s *Store) Pull(key []byte, b interface{}) error {
 
 // Get will retreive b with key "key"
 func (s *Store) Get(key []byte, b interface{}) error {
-	var data []byte
+	buf := bytes.NewBuffer(nil)
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)
 		if objects == nil {
 			return ErrNotFound
 		}
-		data = objects.Get(key)
+		data := objects.Get(key)
 		if data == nil {
 			return ErrNotFound
 		}
+		buf.Write(data)
 		return nil
 	})
 
@@ -111,7 +113,6 @@ func (s *Store) Get(key []byte, b interface{}) error {
 		return err
 	}
 
-	buf := bytes.NewBuffer(data)
 	dec := s.codec.NewDecoder(buf)
 	err = dec.Decode(b)
 
