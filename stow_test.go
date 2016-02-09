@@ -135,13 +135,38 @@ func testForEachStringKeys(t testing.TB, store *Store) {
 	}
 }
 
+func testForEachPtrKeys(t testing.TB, store *Store) {
+	oKey := &MyType{FirstName: "D"}
+
+	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+
+	var found bool
+	err := store.ForEach(func(key *MyType, name MyType) {
+		found = true
+		if *key != *oKey {
+			t.Errorf("mismatching key name %s", key)
+		}
+		if name.FirstName != "Derek" || name.LastName != "Kered" {
+			t.Errorf("mismatching name %s", name)
+		}
+	})
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !found {
+		t.Errorf("ForEach failed!")
+	}
+}
+
 func testForEachKeys(t testing.TB, store *Store) {
 	oKey := MyType{FirstName: "D"}
 
 	store.PutKey(oKey, &MyType{"Derek", "Kered"})
 
 	var found bool
-	err := store.ForEach(func(key MyType, name MyType) {
+	err := store.ForEach(func(key MyType, name *MyType) {
 		found = true
 		if key != oKey {
 			t.Errorf("mismatching key name %s", key)
@@ -181,6 +206,9 @@ func testForEach(t testing.TB, store *Store) {
 }
 
 func testStore(t testing.TB, store *Store) {
+	testForEachPtrKeys(t, store)
+	store.DeleteAll()
+
 	testForEachKeys(t, store)
 	store.DeleteAll()
 
@@ -232,4 +260,14 @@ func TestXML(t *testing.T) {
 
 func TestGob(t *testing.T) {
 	testStore(t, NewStore(db, []byte("gob")))
+}
+
+func TestFunc(t *testing.T) {
+	if _, err := newFuncCall(nil, 1); err == nil {
+		t.Errorf("expected bad func error")
+	}
+
+	if _, err := newFuncCall(nil, func() {}); err == nil {
+		t.Errorf("expected bad # of args func error")
+	}
 }

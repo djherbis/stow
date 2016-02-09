@@ -11,10 +11,12 @@ type funcCall struct {
 	Value reflect.Value
 	Type  reflect.Type
 
-	hasKey  bool
-	keyType reflect.Type
+	hasKey   bool
+	isKeyPtr bool
+	keyType  reflect.Type
 
-	valType reflect.Type
+	isValPtr bool
+	valType  reflect.Type
 }
 
 func newFuncCall(s *Store, fn interface{}) (fc funcCall, err error) {
@@ -39,9 +41,17 @@ func newFuncCall(s *Store, fn interface{}) (fc funcCall, err error) {
 
 func isPtr(typ reflect.Type) bool { return typ.Kind() == reflect.Ptr }
 
+func (fc *funcCall) setKey(typ reflect.Type) {
+	fc.hasKey = true
+	fc.keyType = typ
+	if fc.isKeyPtr = isPtr(fc.keyType); fc.isKeyPtr {
+		fc.keyType = fc.keyType.Elem()
+	}
+}
+
 func (fc *funcCall) setValue(typ reflect.Type) {
 	fc.valType = typ
-	if isPtr(fc.valType) {
+	if fc.isValPtr = isPtr(fc.valType); fc.isValPtr {
 		fc.valType = fc.valType.Elem()
 	}
 }
@@ -53,13 +63,13 @@ func (fc *funcCall) getKey(v []byte) (key reflect.Value, err error) {
 		return reflect.ValueOf(v), nil
 	}
 
-	key = reflect.New(fc.valType)
+	key = reflect.New(fc.keyType)
 
 	if err := fc.s.unmarshal(v, key.Interface()); err != nil {
 		return key, err
 	}
 
-	if !isPtr(fc.keyType) {
+	if !fc.isKeyPtr {
 		key = deref(key)
 	}
 
@@ -73,20 +83,11 @@ func (fc *funcCall) getValue(v []byte) (val reflect.Value, err error) {
 		return val, err
 	}
 
-	if !isPtr(fc.valType) {
+	if !fc.isValPtr {
 		val = deref(val)
 	}
 
 	return val, err
-}
-
-func (fc *funcCall) setKey(typ reflect.Type) {
-	fc.hasKey = true
-	fc.keyType = typ
-	isPtr := fc.keyType.Kind() == reflect.Ptr
-	if isPtr {
-		fc.keyType = fc.keyType.Elem()
-	}
 }
 
 func (fc *funcCall) call(k, v []byte) error {
