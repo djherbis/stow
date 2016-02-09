@@ -84,7 +84,7 @@ func TestInterfaces(t *testing.T) {
 	}
 }
 
-func testStore(t *testing.T, store *Store) {
+func testStore(t testing.TB, store *Store) {
 	store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
 
 	var found bool
