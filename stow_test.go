@@ -1,7 +1,9 @@
 package stow
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -22,18 +24,28 @@ func init() {
 	RegisterName("stow.YourType", &YourType{})
 }
 
+const stowDbFilename = "stowtest.db"
+
+var db *bolt.DB
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	var err error
+	db, err = bolt.Open(stowDbFilename, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	result := m.Run()
+	db.Close()
+	os.Remove(stowDbFilename)
+	os.Exit(result)
+}
+
 type YourType struct {
 	FirstName string `json:"first"`
 }
 
 func TestChangeType(t *testing.T) {
-	db, err := bolt.Open("my4.db", 0600, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	defer os.Remove("my4.db")
-	defer db.Close()
-
 	s := NewStore(db, []byte("interface"))
 
 	s.Put([]byte("test"), &YourType{"DJ"})
@@ -47,19 +59,12 @@ func TestChangeType(t *testing.T) {
 }
 
 func TestInterfaces(t *testing.T) {
-	db, err := bolt.Open("my4.db", 0600, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	defer os.Remove("my4.db")
-	defer db.Close()
-
 	s := NewStore(db, []byte("interface"))
 
 	var j fmt.Stringer = &MyType{"First", "Last"}
 	s.Put([]byte("test"), &j)
 
-	err = s.ForEach(func(str fmt.Stringer) {
+	err := s.ForEach(func(str fmt.Stringer) {
 		if str.String() != "First Last" {
 			t.Errorf("unexpected string %s", str)
 		}
@@ -129,34 +134,13 @@ func testStore(t *testing.T, store *Store) {
 }
 
 func TestJSON(t *testing.T) {
-	db, err := bolt.Open("my1.db", 0600, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	defer os.Remove("my1.db")
-	defer db.Close()
-
 	testStore(t, NewJSONStore(db, []byte("json")))
 }
 
 func TestXML(t *testing.T) {
-	db, err := bolt.Open("my2.db", 0600, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	defer os.Remove("my2.db")
-	defer db.Close()
-
 	testStore(t, NewXMLStore(db, []byte("xml")))
 }
 
 func TestGob(t *testing.T) {
-	db, err := bolt.Open("my3.db", 0600, nil)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	defer os.Remove("my3.db")
-	defer db.Close()
-
 	testStore(t, NewStore(db, []byte("gob")))
 }
