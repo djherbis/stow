@@ -76,7 +76,8 @@ func (s *Store) toBytes(key interface{}) (keyBytes []byte, err error) {
 	}
 }
 
-// PutKey will store b with key "key"
+// PutKey will store b with key "key". If key is []byte or string it uses the key
+// directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
 func (s *Store) PutKey(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
 	if err != nil {
@@ -85,7 +86,8 @@ func (s *Store) PutKey(key interface{}, b interface{}) error {
 	return s.Put(keyBytes, b)
 }
 
-// Put will store b with key "key"
+// Put will store b with key "key". If key is []byte or string it uses the key
+// directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
 func (s *Store) Put(key []byte, b interface{}) (err error) {
 	var data []byte
 	data, err = s.marshal(b)
@@ -140,7 +142,8 @@ func (s *Store) Pull(key []byte, b interface{}) error {
 	return s.unmarshal(buf.Bytes(), b)
 }
 
-// GetKey will retreive b with key "key"
+// GetKey will retreive b with key "key". If key is []byte or string it uses the key
+// directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
 func (s *Store) GetKey(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
 	if err != nil {
