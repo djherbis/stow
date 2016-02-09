@@ -6,9 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/boltdb/bolt"
 )
+
+var pool *sync.Pool = &sync.Pool{
+	New: func() interface{} { return bytes.NewBuffer(nil) },
+}
 
 // ErrNotFound indicates object is not in database.
 var ErrNotFound = errors.New("not found")
@@ -46,27 +51,72 @@ func NewCustomStore(db *bolt.DB, bucket []byte, codec Codec) *Store {
 	return &Store{db: db, bucket: bucket, codec: codec}
 }
 
-// Put will store b with key "key"
-func (s *Store) Put(key []byte, b interface{}) error {
-	buf := bytes.NewBuffer(nil)
-	enc := s.codec.NewEncoder(buf)
-	if err := enc.Encode(b); err != nil {
+func (s *Store) marshal(val interface{}) (data []byte, err error) {
+	buf := pool.Get().(*bytes.Buffer)
+	err = s.codec.NewEncoder(buf).Encode(val)
+	data = buf.Bytes()
+	buf.Reset()
+	pool.Put(buf)
+
+	return data, err
+}
+
+func (s *Store) unmarshal(data []byte, val interface{}) (err error) {
+	return s.codec.NewDecoder(bytes.NewReader(data)).Decode(val)
+}
+
+func (s *Store) toBytes(key interface{}) (keyBytes []byte, err error) {
+	switch k := key.(type) {
+	case string:
+		return []byte(k), nil
+	case []byte:
+		return k, nil
+	default:
+		return s.marshal(key)
+	}
+}
+
+// PutKey will store b with key "key"
+func (s *Store) PutKey(key interface{}, b interface{}) error {
+	keyBytes, err := s.toBytes(key)
+	if err != nil {
 		return err
 	}
+	return s.Put(keyBytes, b)
+}
+
+// Put will store b with key "key"
+func (s *Store) Put(key []byte, b interface{}) (err error) {
+	var data []byte
+	data, err = s.marshal(b)
 
 	return s.db.Update(func(tx *bolt.Tx) error {
 		objects, err := tx.CreateBucketIfNotExists(s.bucket)
 		if err != nil {
 			return err
 		}
-		objects.Put(key, buf.Bytes())
+		objects.Put(key, data)
 		return nil
 	})
 }
 
+// PullKey will retreive b with key "key", and removes it from the store.
+func (s *Store) PullKey(key interface{}, b interface{}) error {
+	keyBytes, err := s.toBytes(key)
+	if err != nil {
+		return err
+	}
+	return s.Pull(keyBytes, b)
+}
+
 // Pull will retreive b with key "key", and removes it from the store.
 func (s *Store) Pull(key []byte, b interface{}) error {
-	buf := bytes.NewBuffer(nil)
+	buf := pool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		pool.Put(buf)
+	}()
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)
 		if objects == nil {
@@ -87,10 +137,16 @@ func (s *Store) Pull(key []byte, b interface{}) error {
 		return err
 	}
 
-	dec := s.codec.NewDecoder(buf)
-	err = dec.Decode(b)
+	return s.unmarshal(buf.Bytes(), b)
+}
 
-	return err
+// GetKey will retreive b with key "key"
+func (s *Store) GetKey(key interface{}, b interface{}) error {
+	keyBytes, err := s.toBytes(key)
+	if err != nil {
+		return err
+	}
+	return s.Get(keyBytes, b)
 }
 
 // Get will retreive b with key "key"
@@ -113,10 +169,7 @@ func (s *Store) Get(key []byte, b interface{}) error {
 		return err
 	}
 
-	dec := s.codec.NewDecoder(buf)
-	err = dec.Decode(b)
-
-	return err
+	return s.unmarshal(buf.Bytes(), b)
 }
 
 // ForEach will run do on each object in the store.
@@ -144,10 +197,8 @@ func (s *Store) ForEach(do interface{}) error {
 		}
 
 		err := objects.ForEach(func(k, v []byte) error {
-			buf := bytes.NewBuffer(v)
-			dec := s.codec.NewDecoder(buf)
 			i := reflect.New(argtype)
-			err := dec.Decode(i.Interface())
+			err := s.unmarshal(v, i.Interface())
 			if err == nil {
 				if !isPtr {
 					if i.IsValid() {
