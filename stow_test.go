@@ -218,17 +218,21 @@ func testStore(t testing.TB, store *Store) {
 	testForEachByteKeys(t, store)
 	store.DeleteAll()
 
+	var name MyType
+	if store.GetKey("hello", &name) != ErrNotFound {
+		t.Errorf("key should not be found.")
+	}
+
 	testForEach(t, store)
 
-	var name MyType
-	store.Get([]byte("hello"), &name)
+	store.GetKey("hello", &name)
 
 	if name.FirstName != "Derek" || name.LastName != "Kered" {
 		t.Errorf("Unexpected name: %v", name)
 	}
 
 	var name2 MyType
-	store.Pull([]byte("hello"), &name2)
+	store.PullKey("hello", &name2)
 
 	if name2.FirstName != "Derek" || name2.LastName != "Kered" {
 		t.Errorf("Unexpected name2: %v", name2)
@@ -241,6 +245,13 @@ func testStore(t testing.TB, store *Store) {
 	}
 
 	store.Put([]byte("hello"), &MyType{"Friend", "person"})
+
+	var name5 MyType
+	err = store.Get([]byte("hello world"), &name5)
+	if err != ErrNotFound {
+		t.Errorf("Should have been NotFound!")
+	}
+
 	store.DeleteAll()
 
 	var name4 MyType
