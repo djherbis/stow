@@ -1,6 +1,7 @@
 package stow
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -84,7 +85,82 @@ func TestInterfaces(t *testing.T) {
 	}
 }
 
-func testStore(t testing.TB, store *Store) {
+func testForEachByteKeys(t testing.TB, store *Store) {
+	oKey := []byte("hello")
+
+	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+
+	var found bool
+	err := store.ForEach(func(key []byte, name MyType) {
+		found = true
+		if !bytes.Equal(key, oKey) {
+			t.Errorf("mismatching key name %s", key)
+		}
+		if name.FirstName != "Derek" || name.LastName != "Kered" {
+			t.Errorf("mismatching name %s", name)
+		}
+	})
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !found {
+		t.Errorf("ForEach failed!")
+	}
+}
+
+func testForEachStringKeys(t testing.TB, store *Store) {
+	oKey := "hello"
+
+	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+
+	var found bool
+	err := store.ForEach(func(key string, name MyType) {
+		found = true
+		if key != oKey {
+			t.Errorf("mismatching key name %s", key)
+		}
+		if name.FirstName != "Derek" || name.LastName != "Kered" {
+			t.Errorf("mismatching name %s", name)
+		}
+	})
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !found {
+		t.Errorf("ForEach failed!")
+	}
+}
+
+func testForEachKeys(t testing.TB, store *Store) {
+	oKey := MyType{FirstName: "D"}
+
+	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+
+	var found bool
+	err := store.ForEach(func(key MyType, name MyType) {
+		found = true
+		if key != oKey {
+			t.Errorf("mismatching key name %s", key)
+		}
+		if name.FirstName != "Derek" || name.LastName != "Kered" {
+			t.Errorf("mismatching name %s", name)
+		}
+	})
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if !found {
+		t.Errorf("ForEach failed!")
+	}
+}
+
+func testForEach(t testing.TB, store *Store) {
 	store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
 
 	var found bool
@@ -102,6 +178,19 @@ func testStore(t testing.TB, store *Store) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func testStore(t testing.TB, store *Store) {
+	testForEachKeys(t, store)
+	store.DeleteAll()
+
+	testForEachStringKeys(t, store)
+	store.DeleteAll()
+
+	testForEachByteKeys(t, store)
+	store.DeleteAll()
+
+	testForEach(t, store)
 
 	var name MyType
 	store.Get([]byte("hello"), &name)
@@ -118,7 +207,7 @@ func testStore(t testing.TB, store *Store) {
 	}
 
 	var name3 MyType
-	err = store.Pull([]byte("hello"), &name3)
+	err := store.Pull([]byte("hello"), &name3)
 	if err != ErrNotFound {
 		t.Errorf("pull failed to remove the name!")
 	}
