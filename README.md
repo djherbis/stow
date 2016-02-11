@@ -66,5 +66,5 @@ func TestJson(t *testing.T) {
 Installation
 ------------
 ```sh
-go get github.com/djherbis/stow
+go get gopkg.in/djherbis/stow.v2
 ```
