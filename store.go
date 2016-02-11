@@ -140,7 +140,7 @@ func (s *Store) pull(key []byte, b interface{}) error {
 	return s.unmarshal(buf.Bytes(), b)
 }
 
-// Get will retreive b with key "key". If key is []byte or string it uses the key
+// Get will retrieve b with key "key". If key is []byte or string it uses the key
 // directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
 func (s *Store) Get(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
@@ -150,7 +150,7 @@ func (s *Store) Get(key interface{}, b interface{}) error {
 	return s.get(keyBytes, b)
 }
 
-// Get will retreive b with key "key"
+// Get will retrieve b with key "key"
 func (s *Store) get(key []byte, b interface{}) error {
 	buf := bytes.NewBuffer(nil)
 	err := s.db.View(func(tx *bolt.Tx) error {
