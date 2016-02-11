@@ -153,7 +153,7 @@ func (s *Store) Get(key interface{}, b interface{}) error {
 // Get will retreive b with key "key"
 func (s *Store) get(key []byte, b interface{}) error {
 	buf := bytes.NewBuffer(nil)
-	err := s.db.Update(func(tx *bolt.Tx) error {
+	err := s.db.View(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)
 		if objects == nil {
 			return ErrNotFound
@@ -182,7 +182,7 @@ func (s *Store) ForEach(do interface{}) error {
 		return err
 	}
 
-	return s.db.Update(func(tx *bolt.Tx) error {
+	return s.db.View(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)
 		if objects == nil {
 			return nil
