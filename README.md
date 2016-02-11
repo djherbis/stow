@@ -2,6 +2,7 @@ Stow
 ==========
 
 [![GoDoc](https://godoc.org/github.com/djherbis/stow?status.svg)](https://godoc.org/github.com/djherbis/stow)
+[![Release](https://img.shields.io/github/release/djherbis/stow.svg)](https://github.com/djherbis/stow/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.txt)
 [![Build Status](https://travis-ci.org/djherbis/stow.svg?branch=master)](https://travis-ci.org/djherbis/stow) 
 [![Coverage Status](https://coveralls.io/repos/djherbis/stow/badge.svg?branch=master)](https://coveralls.io/r/djherbis/stow?branch=master)
