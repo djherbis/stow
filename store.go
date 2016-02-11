@@ -9,7 +9,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-var pool *sync.Pool = &sync.Pool{
+var pool = &sync.Pool{
 	New: func() interface{} { return bytes.NewBuffer(nil) },
 }
 
