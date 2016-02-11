@@ -48,8 +48,8 @@ func TestJson(t *testing.T) {
   store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
 
   // For each element in the store
-  store.ForEach(func(name Name){
-    fmt.Println(name)
+  store.ForEach(func(key string, name MyType){
+    fmt.Println(key, name)
   })
 
   // Get the object
