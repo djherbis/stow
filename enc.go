@@ -45,7 +45,7 @@ func (c XMLCodec) NewDecoder(r io.Reader) Decoder {
 // JSONCodec is used to encode/decode JSON
 type JSONCodec struct{}
 
-// NewEncoder retuns a new json encoder which writes to w
+// NewEncoder returns a new json encoder which writes to w
 func (c JSONCodec) NewEncoder(w io.Writer) Encoder {
 	return json.NewEncoder(w)
 }

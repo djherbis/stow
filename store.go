@@ -16,7 +16,7 @@ var pool *sync.Pool = &sync.Pool{
 // ErrNotFound indicates object is not in database.
 var ErrNotFound = errors.New("not found")
 
-// Store manages objects persistance.
+// Store manages objects persistence.
 type Store struct {
 	db     *bolt.DB
 	bucket []byte
@@ -100,7 +100,7 @@ func (s *Store) put(key []byte, b interface{}) (err error) {
 	})
 }
 
-// Pull will retreive b with key "key", and removes it from the store.
+// Pull will retrieve b with key "key", and removes it from the store.
 func (s *Store) Pull(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
 	if err != nil {
@@ -109,7 +109,7 @@ func (s *Store) Pull(key interface{}, b interface{}) error {
 	return s.pull(keyBytes, b)
 }
 
-// Pull will retreive b with key "key", and removes it from the store.
+// Pull will retrieve b with key "key", and removes it from the store.
 func (s *Store) pull(key []byte, b interface{}) error {
 	buf := pool.Get().(*bytes.Buffer)
 	defer func() {
