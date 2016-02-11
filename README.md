@@ -45,16 +45,16 @@ func TestJson(t *testing.T) {
   store := NewJSONStore(db, []byte("names"))
 
   // Store the object
-  store.Put([]byte("hello"), &MyType{"Derek", "Kered"})
+  store.Put("hello", &MyType{"Derek", "Kered"})
 
   // For each element in the store
-  store.ForEach(func(name Name){
-    fmt.Println(name)
+  store.ForEach(func(key string, name MyType){
+    fmt.Println(key, name)
   })
 
   // Get the object
   var name MyType
-  store.Pull([]byte("hello"), &name)
+  store.Pull("hello", &name)
 
   // Verify
   if name.FirstName != "Derek" || name.LastName != "Kered" {
