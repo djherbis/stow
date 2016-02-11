@@ -74,19 +74,19 @@ func (s *Store) toBytes(key interface{}) (keyBytes []byte, err error) {
 	}
 }
 
-// PutKey will store b with key "key". If key is []byte or string it uses the key
+// Put will store b with key "key". If key is []byte or string it uses the key
 // directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
-func (s *Store) PutKey(key interface{}, b interface{}) error {
+func (s *Store) Put(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
 	if err != nil {
 		return err
 	}
-	return s.Put(keyBytes, b)
+	return s.put(keyBytes, b)
 }
 
 // Put will store b with key "key". If key is []byte or string it uses the key
 // directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
-func (s *Store) Put(key []byte, b interface{}) (err error) {
+func (s *Store) put(key []byte, b interface{}) (err error) {
 	var data []byte
 	data, err = s.marshal(b)
 
@@ -100,17 +100,17 @@ func (s *Store) Put(key []byte, b interface{}) (err error) {
 	})
 }
 
-// PullKey will retreive b with key "key", and removes it from the store.
-func (s *Store) PullKey(key interface{}, b interface{}) error {
+// Pull will retreive b with key "key", and removes it from the store.
+func (s *Store) Pull(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
 	if err != nil {
 		return err
 	}
-	return s.Pull(keyBytes, b)
+	return s.pull(keyBytes, b)
 }
 
 // Pull will retreive b with key "key", and removes it from the store.
-func (s *Store) Pull(key []byte, b interface{}) error {
+func (s *Store) pull(key []byte, b interface{}) error {
 	buf := pool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
@@ -140,18 +140,18 @@ func (s *Store) Pull(key []byte, b interface{}) error {
 	return s.unmarshal(buf.Bytes(), b)
 }
 
-// GetKey will retreive b with key "key". If key is []byte or string it uses the key
+// Get will retreive b with key "key". If key is []byte or string it uses the key
 // directly. Otherwise, it marshals the given type into bytes using the stores Encoder.
-func (s *Store) GetKey(key interface{}, b interface{}) error {
+func (s *Store) Get(key interface{}, b interface{}) error {
 	keyBytes, err := s.toBytes(key)
 	if err != nil {
 		return err
 	}
-	return s.Get(keyBytes, b)
+	return s.get(keyBytes, b)
 }
 
 // Get will retreive b with key "key"
-func (s *Store) Get(key []byte, b interface{}) error {
+func (s *Store) get(key []byte, b interface{}) error {
 	buf := bytes.NewBuffer(nil)
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		objects := tx.Bucket(s.bucket)

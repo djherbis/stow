@@ -88,7 +88,7 @@ func TestInterfaces(t *testing.T) {
 func testForEachByteKeys(t testing.TB, store *Store) {
 	oKey := []byte("hello")
 
-	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+	store.Put(oKey, &MyType{"Derek", "Kered"})
 
 	var found bool
 	err := store.ForEach(func(key []byte, name MyType) {
@@ -113,7 +113,7 @@ func testForEachByteKeys(t testing.TB, store *Store) {
 func testForEachStringKeys(t testing.TB, store *Store) {
 	oKey := "hello"
 
-	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+	store.Put(oKey, &MyType{"Derek", "Kered"})
 
 	var found bool
 	err := store.ForEach(func(key string, name MyType) {
@@ -138,7 +138,7 @@ func testForEachStringKeys(t testing.TB, store *Store) {
 func testForEachPtrKeys(t testing.TB, store *Store) {
 	oKey := &MyType{FirstName: "D"}
 
-	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+	store.Put(oKey, &MyType{"Derek", "Kered"})
 
 	var found bool
 	err := store.ForEach(func(key *MyType, name MyType) {
@@ -163,7 +163,7 @@ func testForEachPtrKeys(t testing.TB, store *Store) {
 func testForEachKeys(t testing.TB, store *Store) {
 	oKey := MyType{FirstName: "D"}
 
-	store.PutKey(oKey, &MyType{"Derek", "Kered"})
+	store.Put(oKey, &MyType{"Derek", "Kered"})
 
 	var found bool
 	err := store.ForEach(func(key MyType, name *MyType) {
@@ -219,20 +219,20 @@ func testStore(t testing.TB, store *Store) {
 	store.DeleteAll()
 
 	var name MyType
-	if store.GetKey("hello", &name) != ErrNotFound {
+	if store.Get("hello", &name) != ErrNotFound {
 		t.Errorf("key should not be found.")
 	}
 
 	testForEach(t, store)
 
-	store.GetKey("hello", &name)
+	store.Get("hello", &name)
 
 	if name.FirstName != "Derek" || name.LastName != "Kered" {
 		t.Errorf("Unexpected name: %v", name)
 	}
 
 	var name2 MyType
-	store.PullKey("hello", &name2)
+	store.Pull("hello", &name2)
 
 	if name2.FirstName != "Derek" || name2.LastName != "Kered" {
 		t.Errorf("Unexpected name2: %v", name2)
