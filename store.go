@@ -89,6 +89,9 @@ func (s *Store) Put(key interface{}, b interface{}) error {
 func (s *Store) put(key []byte, b interface{}) (err error) {
 	var data []byte
 	data, err = s.marshal(b)
+	if err != nil {
+		return err	
+	}
 
 	return s.db.Update(func(tx *bolt.Tx) error {
 		objects, err := tx.CreateBucketIfNotExists(s.bucket)
