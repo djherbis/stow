@@ -14,53 +14,66 @@ Usage
 This package provides a persistence manager for objects backed by boltdb.
 
 ```go
-package stow
+package main
 
 import (
-  "os"
-  "testing"
+  "encoding/gob"
+  "fmt"
+  "log"
 
   "github.com/boltdb/bolt"
+  stow "gopkg.in/djherbis/stow.v2"
 )
 
-func TestJson(t *testing.T) {
-
+func main() {
   // Create a boltdb database
   db, err := bolt.Open("my.db", 0600, nil)
   if err != nil {
-    t.Error(err.Error())
-  }
-  defer os.Remove("my.db")
-  defer db.Close()
-
-
-  // Defined our test Type
-  type MyType struct {
-    FirstName string `json:"first"`
-    LastName  string `json:"last"`
+    log.Fatal(err)
   }
 
-  // Create a Json-encoded Store, Xml and Gob are also built-in
-  // We'll we store the name in a boltdb bucket named "names"
-  store := NewJSONStore(db, []byte("names"))
+  // Open/Create a Json-encoded Store, Xml and Gob are also built-in
+  // We'll we store a greeting and person in a boltdb bucket named "people"
+  peopleStore := stow.NewJSONStore(db, []byte("people"))
 
-  // Store the object
-  store.Put("hello", &MyType{"Derek", "Kered"})
+  peopleStore.Put("hello", Person{Name: "Dustin"})
 
-  // For each element in the store
-  store.ForEach(func(key string, name MyType){
-    fmt.Println(key, name)
+  peopleStore.ForEach(func(greeting string, person Person) {
+    fmt.Println(greeting, person.Name)
   })
 
-  // Get the object
-  var name MyType
-  store.Pull("hello", &name)
+  // Open/Create a Gob-encoded Store. The Gob encoding keeps type information,
+  // so you can encode/decode interfaces!
+  sayerStore := stow.NewStore(db, []byte("greetings"))
 
-  // Verify
-  if name.FirstName != "Derek" || name.LastName != "Kered" {
-    t.Errorf("Unexpected name: %v", name)
-  }
+  var sayer Sayer = Person{Name: "Dustin"}
+  sayerStore.Put("hello", &sayer)
+
+  var retSayer Sayer
+  sayerStore.Get("hello", &retSayer)
+  retSayer.Say("hello")
+
+  sayerStore.ForEach(func(sayer Sayer) {
+    sayer.Say("hey")
+  })
 }
+
+type Sayer interface {
+  Say(something string)
+}
+
+type Person struct {
+  Name string
+}
+
+func (p Person) Say(greeting string) {
+  fmt.Printf("%s says %s.\n", p.Name, greeting)
+}
+
+func init() {
+  gob.Register(&Person{})
+}
+
 ```
 
 Installation
