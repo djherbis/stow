@@ -33,7 +33,7 @@ func newFuncCall(s *Store, fn interface{}) (fc funcCall, err error) {
 		fc.setKey(fc.Type.In(0))
 		fc.setValue(fc.Type.In(1))
 	} else {
-		return fc, fmt.Errorf("bad number of args in ForEach fn.")
+		return fc, fmt.Errorf("bad number of args in ForEach func()")
 	}
 
 	return fc, nil
