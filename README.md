@@ -22,7 +22,7 @@ import (
   "log"
 
   "github.com/boltdb/bolt"
-   "gopkg.in/djherbis/stow.v2"
+  "gopkg.in/djherbis/stow.v2"
 )
 
 func main() {
