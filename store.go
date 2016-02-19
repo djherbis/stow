@@ -98,8 +98,7 @@ func (s *Store) put(key []byte, b interface{}) (err error) {
 		if err != nil {
 			return err
 		}
-		objects.Put(key, data)
-		return nil
+		return objects.Put(key, data)
 	})
 }
 
@@ -132,8 +131,7 @@ func (s *Store) pull(key []byte, b interface{}) error {
 		}
 
 		buf.Write(data)
-		objects.Delete(key)
-		return nil
+		return objects.Delete(key)
 	})
 
 	if err != nil {
