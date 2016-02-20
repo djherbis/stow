@@ -252,12 +252,20 @@ func testStore(t testing.TB, store *Store) {
 		t.Errorf("Should have been NotFound!")
 	}
 
-	store.DeleteAll()
+	store.Delete("hello")
 
 	var name4 MyType
 	err = store.Pull([]byte("hello"), &name4)
 	if err != ErrNotFound {
-		t.Errorf("DeleteAll failed!")
+		t.Errorf("Delete failed!")
+	}
+
+	if err := store.DeleteAll(); err != nil {
+		t.Errorf("DeleteAll should have returned nil err %s", err.Error())
+	}
+
+	if err := store.Delete("hello"); err != nil {
+		t.Errorf("Delete should have returned nil err %s", err.Error())
 	}
 }
 

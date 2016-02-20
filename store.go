@@ -198,3 +198,19 @@ func (s *Store) DeleteAll() error {
 		return tx.DeleteBucket(s.bucket)
 	})
 }
+
+// Delete will remove the item with the specified key from the store.
+// It returns nil if the item was not found (like BoltDB).
+func (s *Store) Delete(key interface{}) error {
+	keyBytes, err := s.toBytes(key)
+	if err != nil {
+		return err
+	}
+	return s.db.Update(func(tx *bolt.Tx) error {
+		objects := tx.Bucket(s.bucket)
+		if objects == nil {
+			return nil
+		}
+		return objects.Delete(keyBytes)
+	})
+}
