@@ -269,6 +269,16 @@ func testStore(t testing.TB, store *Store) {
 	}
 }
 
+func TestNestedJSON(t *testing.T) {
+	parent := NewJSONStore(db, []byte("json_parent"))
+	parent.Put("hello", "world")
+	testStore(t, parent.NewNestedStore([]byte("json_child")))
+	var worldValue string
+	if err := parent.Pull("hello", &worldValue); err != nil || worldValue != "world" {
+		t.Error("child actions affected parent!", err, worldValue)
+	}
+}
+
 func TestJSON(t *testing.T) {
 	testStore(t, NewJSONStore(db, []byte("json")))
 }

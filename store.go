@@ -19,7 +19,7 @@ var ErrNotFound = errors.New("not found")
 // Store manages objects persistence.
 type Store struct {
 	db     *bolt.DB
-	bucket []byte
+	bucket bucketSpec
 	codec  Codec
 }
 
@@ -46,7 +46,25 @@ func NewXMLStore(db *bolt.DB, bucket []byte) *Store {
 // NewCustomStore allows you to create a store with
 // a custom underlying Encoding
 func NewCustomStore(db *bolt.DB, bucket []byte, codec Codec) *Store {
-	return &Store{db: db, bucket: bucket, codec: codec}
+	return &Store{db: db, bucket: bucketSpec{bucket}, codec: codec}
+}
+
+// NewNestedStore returns a new Store which is nested inside the current store's
+// bucket. It inherits the original store's Codec, and will be deleted by the parent
+// store's DeleteAll method. Also note that buckets are in the parents key-space so
+// you cannot have a NestedStore whose "bucket" is the same as a parent's key.
+func (s *Store) NewNestedStore(bucket []byte) *Store {
+	return s.NewCustomNestedStore(bucket, s.codec)
+}
+
+// NewCustomNestedStore works the same as NewNestedStore except you can override the
+// Codec used by the returned Store.
+func (s *Store) NewCustomNestedStore(bucket []byte, codec Codec) *Store {
+	return &Store{
+		db:     db,
+		bucket: append(s.bucket, bucket),
+		codec:  codec,
+	}
 }
 
 func (s *Store) marshal(val interface{}) (data []byte, err error) {
@@ -94,7 +112,7 @@ func (s *Store) put(key []byte, b interface{}) (err error) {
 	}
 
 	return s.db.Update(func(tx *bolt.Tx) error {
-		objects, err := tx.CreateBucketIfNotExists(s.bucket)
+		objects, err := s.bucket.createOrGet(tx)
 		if err != nil {
 			return err
 		}
@@ -120,7 +138,7 @@ func (s *Store) pull(key []byte, b interface{}) error {
 	}()
 
 	err := s.db.Update(func(tx *bolt.Tx) error {
-		objects := tx.Bucket(s.bucket)
+		objects := s.bucket.get(tx)
 		if objects == nil {
 			return ErrNotFound
 		}
@@ -155,7 +173,7 @@ func (s *Store) Get(key interface{}, b interface{}) error {
 func (s *Store) get(key []byte, b interface{}) error {
 	buf := bytes.NewBuffer(nil)
 	err := s.db.View(func(tx *bolt.Tx) error {
-		objects := tx.Bucket(s.bucket)
+		objects := s.bucket.get(tx)
 		if objects == nil {
 			return ErrNotFound
 		}
@@ -184,7 +202,7 @@ func (s *Store) ForEach(do interface{}) error {
 	}
 
 	return s.db.View(func(tx *bolt.Tx) error {
-		objects := tx.Bucket(s.bucket)
+		objects := s.bucket.get(tx)
 		if objects == nil {
 			return nil
 		}
@@ -194,9 +212,7 @@ func (s *Store) ForEach(do interface{}) error {
 
 // DeleteAll empties the store
 func (s *Store) DeleteAll() error {
-	return s.db.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket(s.bucket)
-	})
+	return s.db.Update(s.bucket.delete)
 }
 
 // Delete will remove the item with the specified key from the store.
@@ -207,10 +223,55 @@ func (s *Store) Delete(key interface{}) error {
 		return err
 	}
 	return s.db.Update(func(tx *bolt.Tx) error {
-		objects := tx.Bucket(s.bucket)
+		objects := s.bucket.get(tx)
 		if objects == nil {
 			return nil
 		}
 		return objects.Delete(keyBytes)
 	})
+}
+
+type bucketSpec [][]byte
+
+func (bs bucketSpec) get(tx *bolt.Tx) (bt *bolt.Bucket) {
+	for _, b := range bs {
+		if bt != nil {
+			bt = bt.Bucket(b)
+		} else {
+			bt = tx.Bucket(b)
+		}
+
+		if bt == nil {
+			break
+		}
+	}
+	return bt
+}
+
+func (bs bucketSpec) createOrGet(tx *bolt.Tx) (bt *bolt.Bucket, err error) {
+	for _, b := range bs {
+		if bt != nil {
+			bt, err = bt.CreateBucketIfNotExists(b)
+		} else {
+			bt, err = tx.CreateBucketIfNotExists(b)
+		}
+
+		if bt == nil || err != nil {
+			break
+		}
+	}
+	return bt, err
+}
+
+func (bs bucketSpec) delete(tx *bolt.Tx) (err error) {
+	switch len(bs) {
+	case 0:
+		return nil
+	case 1:
+		return tx.DeleteBucket(bs[0])
+	default:
+		lastParentBucket := bs[:len(bs)-1]
+		childBucketName := bs[len(bs)-1]
+		return lastParentBucket.get(tx).DeleteBucket(childBucketName)
+	}
 }
