@@ -61,7 +61,7 @@ func (s *Store) NewNestedStore(bucket []byte) *Store {
 // Codec used by the returned Store.
 func (s *Store) NewCustomNestedStore(bucket []byte, codec Codec) *Store {
 	return &Store{
-		db:     db,
+		db:     s.db,
 		bucket: append(s.bucket, bucket),
 		codec:  codec,
 	}
