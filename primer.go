@@ -29,6 +29,9 @@ type primedCodec struct {
 // sees a new type. Pass sample values for types you plan on Encoding/Decoding to this
 // method in order to avoid the storage overhead of encoding their type informaton for every
 // NewEncoder/NewDecoder.
+// Warning, PrimedCodec should be used consistently (for reading & writing). It
+// won't be able to read data written by unprimed encoders, and data written by it
+// won't be able to be read by unprimed decoders.
 func NewPrimedCodec(codec Codec, types ...interface{}) (Codec, error) {
 	var buf bytes.Buffer
 	enc := codec.NewEncoder(&buf)

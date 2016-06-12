@@ -11,6 +11,8 @@ type pooledCodec struct {
 }
 
 // NewPooledCodec creates a new Codec which re-uses Encoder/Decoders created by the codec.
+// Warning, this is only useful when creating Encoders/Decoders is 'expensive' and when
+// they support being re-used.
 func NewPooledCodec(codec Codec) Codec {
 	return &pooledCodec{
 		encoderPool: sync.Pool{New: func() interface{} {
