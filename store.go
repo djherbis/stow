@@ -69,16 +69,27 @@ func (s *Store) NewCustomNestedStore(bucket []byte, codec Codec) *Store {
 
 func (s *Store) marshal(val interface{}) (data []byte, err error) {
 	buf := pool.Get().(*bytes.Buffer)
-	err = s.codec.NewEncoder(buf).Encode(val)
+	enc := s.codec.NewEncoder(buf)
+	err = enc.Encode(val)
 	data = append(data, buf.Bytes()...)
 	buf.Reset()
 	pool.Put(buf)
+
+	if pCodec, ok := s.codec.(*pooledCodec); ok {
+		pCodec.PutEncoder(enc)
+	}
 
 	return data, err
 }
 
 func (s *Store) unmarshal(data []byte, val interface{}) (err error) {
-	return s.codec.NewDecoder(bytes.NewReader(data)).Decode(val)
+	dec := s.codec.NewDecoder(bytes.NewReader(data))
+	err = dec.Decode(val)
+
+	if pCodec, ok := s.codec.(*pooledCodec); ok {
+		pCodec.PutDecoder(dec)
+	}
+	return err
 }
 
 func (s *Store) toBytes(key interface{}) (keyBytes []byte, err error) {

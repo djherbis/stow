@@ -291,6 +291,14 @@ func TestGob(t *testing.T) {
 	testStore(t, NewStore(db, []byte("gob")))
 }
 
+func TestPrimedGob(t *testing.T) {
+	codec, err := NewPrimedCodec(GobCodec{}, MyType{})
+	if err != nil {
+		t.Error(err)
+	}
+	testStore(t, NewCustomStore(db, []byte("primedGob"), NewPooledCodec(codec)))
+}
+
 func TestFunc(t *testing.T) {
 	if _, err := newFuncCall(nil, 1); err == nil {
 		t.Errorf("expected bad func error")
