@@ -28,7 +28,12 @@ type primedCodec struct {
 // Codec's like GobCodec{} which encodes/decodes extra type information whenever it
 // sees a new type. Pass sample values for types you plan on Encoding/Decoding to this
 // method in order to avoid the storage overhead of encoding their type informaton for every
-// NewEncoder/NewDecoder.
+// NewEncoder/NewDecoder. The order that types are listed (even through recursive encoding of a type)
+// of the passed sample types must be consistent across re-loads. This means that modifying
+// the definition of sample types may not be supported. Also, avoid introducing types via
+// map keys/values as map iteration isn't consistent. Introducing new types during encoding
+// will prevent you from adding new types to the Primed type-set, and also will include
+// the type definiftion over-head in thier output.
 // Warning, PrimedCodec should be used consistently (for reading & writing). It
 // won't be able to read data written by unprimed encoders, and data written by it
 // won't be able to be read by unprimed decoders.

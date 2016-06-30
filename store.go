@@ -75,7 +75,7 @@ func (s *Store) marshal(val interface{}) (data []byte, err error) {
 	buf.Reset()
 	pool.Put(buf)
 
-	if pCodec, ok := s.codec.(*pooledCodec); ok {
+	if pCodec, ok := s.codec.(*pooledCodec); ok && err == nil {
 		pCodec.PutEncoder(enc)
 	}
 
@@ -86,7 +86,7 @@ func (s *Store) unmarshal(data []byte, val interface{}) (err error) {
 	dec := s.codec.NewDecoder(bytes.NewReader(data))
 	err = dec.Decode(val)
 
-	if pCodec, ok := s.codec.(*pooledCodec); ok {
+	if pCodec, ok := s.codec.(*pooledCodec); ok && err == nil {
 		pCodec.PutDecoder(dec)
 	}
 	return err
