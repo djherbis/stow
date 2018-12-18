@@ -11,7 +11,7 @@ Stow
 Usage
 ------------
 
-This package provides a persistence manager for objects backed by boltdb.
+This package provides a persistence manager for objects backed by [bbolt (orig. boltdb)](https://github.com/etcd-io/bbolt).
 
 ```go
 package main
@@ -21,12 +21,12 @@ import (
   "fmt"
   "log"
 
-  "github.com/boltdb/bolt"
+  bolt "go.etcd.io/bbolt"
   "gopkg.in/djherbis/stow.v2"
 )
 
 func main() {
-  // Create a boltdb database
+  // Create a boltdb (bbolt fork) database
   db, err := bolt.Open("my.db", 0600, nil)
   if err != nil {
     log.Fatal(err)
@@ -79,5 +79,5 @@ func init() {
 Installation
 ------------
 ```sh
-go get gopkg.in/djherbis/stow.v2
+go get gopkg.in/djherbis/stow.v3
 ```

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 var pool = &sync.Pool{
