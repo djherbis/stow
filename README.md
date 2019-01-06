@@ -22,7 +22,7 @@ import (
   "log"
 
   bolt "go.etcd.io/bbolt"
-  "gopkg.in/djherbis/stow.v2"
+  "gopkg.in/djherbis/stow.v3"
 )
 
 func main() {
