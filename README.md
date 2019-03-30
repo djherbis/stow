@@ -33,7 +33,7 @@ func main() {
   }
 
   // Open/Create a Json-encoded Store, Xml and Gob are also built-in
-  // We'll we store a greeting and person in a boltdb bucket named "people"
+  // We'll store a greeting and person in a boltdb bucket named "people"
   peopleStore := stow.NewJSONStore(db, []byte("people"))
 
   peopleStore.Put("hello", Person{Name: "Dustin"})
