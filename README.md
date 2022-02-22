@@ -4,7 +4,7 @@ Stow
 [![GoDoc](https://godoc.org/github.com/djherbis/stow?status.svg)](https://godoc.org/github.com/djherbis/stow/v4)
 [![Release](https://img.shields.io/github/release/djherbis/stow.svg)](https://github.com/djherbis/stow/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.txt)
-[![Build Status](https://travis-ci.org/djherbis/stow.svg?branch=master)](https://travis-ci.org/djherbis/stow) 
+[![go test](https://github.com/djherbis/stow/actions/workflows/go-test.yml/badge.svg)](https://github.com/djherbis/stow/actions/workflows/go-test.yml)
 [![Coverage Status](https://coveralls.io/repos/djherbis/stow/badge.svg?branch=master)](https://coveralls.io/r/djherbis/stow?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/djherbis/stow)](https://goreportcard.com/report/github.com/djherbis/stow)
 
